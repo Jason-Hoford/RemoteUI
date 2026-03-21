@@ -7,29 +7,39 @@ The Python RemoteCompose generator is validated at three levels:
 2. **Byte-identical matching** — against Java/Kotlin reference `.rc` files
 3. **Android end-to-end** — visual rendering in the RemoteCompose player
 
-## 1. Unit Tests (`tests/verify_encoding.py`)
+## 1. Unit Tests (`demos/verify_encoding.py`)
 
 79 tests verify low-level encoding: wire buffer operations, NaN encoding,
 opcode serialization, modifier encoding, paint state, header format, etc.
 
-Run: `python -m pytest tests/verify_encoding.py -v`
+Run:
+
+```bash
+python demos/verify_encoding.py
+```
 
 ## 2. Demo Generation (`demos/run_all.py`)
 
 Generates all demos and reports pass/fail. Currently 219 demos across:
 - `demos/components/` — 47 component demos + 9 CORE_TEXT variants
-- `demos/advanced/` — 20+ advanced demos (clocks, graphs, touch, animation)
+- `demos/advanced/` — 57 advanced demos (clocks, graphs, touch, animation, paths, sensors)
 - `demos/validation/` — 6 stress-test demos (no Java reference; Python-only)
 
-Run: `python demos/run_all.py`
+Run:
+
+```bash
+python demos/run_all.py
+```
 
 All demos write to `demos/output/`. Each demo function returns an `RcContext`
 or `RemoteComposeWriter` and the runner calls `encode()` + `save()`.
 
-## 3. Reference Matching (`demos/check_references.py`)
+## 3. Reference Matching
 
-Compares generated `.rc` files byte-for-byte against Kotlin reference files in
-`integration-tests/player-view-demos/src/main/res/raw/`.
+Generated `.rc` files can be compared byte-for-byte against Kotlin reference
+files. Place reference `.rc` files in `demos/reference_rc/` and compare them
+against the generated output in `demos/output/` using standard tools
+(e.g., `diff`, `cmp`, or a custom comparison script).
 
 ### Current Status: 145/171 matches
 
@@ -48,26 +58,21 @@ Some demos map to differently-named references:
 - `demo_modifier_z_index` → `c_modifier_zindex`
 - Many `demo_X` → `X` (prefix stripped)
 
-The check script handles this via explicit name maps and fuzzy matching.
-
 ## 4. Android End-to-End Testing
 
 ### Setup
 
-Android viewer app: `C:\Users\jason\AndroidStudioProjects\MyFirstAppRC`
-- Uses `RemoteComposePlayer.setDocument(bytes)` to render
-- Auto-discovers `.rc` files from `res/raw/` via `R.raw` reflection
+Any Android app that uses `RemoteComposePlayer` can render generated `.rc`
+files. The workflow:
 
-### Adding Test Files
+1. Copy `.rc` files to the Android app's `res/raw/` directory
+2. Build and install the app
+3. Load the `.rc` file bytes and pass to `RemoteComposePlayer.setDocument(bytes)`
+4. Visually confirm rendering matches expectations
 
-1. Copy `.rc` files to `app/src/main/res/raw/`
-2. Build: `cd MyFirstAppRC && ./gradlew :app:assembleDebug`
-3. Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
-4. Launch app, search for demo name, verify rendering
+### Validation Demo Results
 
-### Validation Demo Results (2026-03-21)
-
-All 6 validation demos verified rendering correctly:
+All 6 validation demos verified rendering correctly on an Android emulator:
 
 | Demo | Exercises | Result |
 |------|-----------|--------|
@@ -82,7 +87,7 @@ All 6 validation demos verified rendering correctly:
 
 Before making changes:
 1. Run `python demos/run_all.py` — all 219 demos must pass
-2. Run `python -m pytest tests/verify_encoding.py` — all 79 tests must pass
-3. Run `python demos/check_references.py` — match count must not decrease
+2. Run `python demos/verify_encoding.py` — all 79 tests must pass
+3. If reference `.rc` files are available, verify match count does not decrease
 
-After making changes, repeat all three checks.
+After making changes, repeat all checks.
