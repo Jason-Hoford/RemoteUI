@@ -31,7 +31,7 @@ The generator is **strongly validated** and the portable Java public API surface
 | Android rendering verification | **11 demos** visually confirmed |
 | External dependencies | **None** (Python 3.10+ stdlib only) |
 
-The 26 non-matching references are fully accounted for: 8 require Android `Bitmap` APIs, 3 require font rasterization (`buildPathFromText`), ~12 lack matching upstream source, and the remaining few have explained differences (denormalized float zeros, stale references, RNG divergence). See [Known Limitations](docs/KNOWN_LIMITATIONS.md) for the complete breakdown.
+The 26 non-matching references are fully accounted for: 8 use Android app resource bitmaps not available as standalone files, 3 require font rasterization (`buildPathFromText`), ~12 lack matching upstream source, and the remaining few have explained differences (denormalized float zeros, stale references, RNG divergence). See [Known Limitations](docs/KNOWN_LIMITATIONS.md) for the complete breakdown.
 
 ---
 
@@ -254,7 +254,7 @@ Runs 79 tests covering wire buffer operations, NaN encoding, opcode correctness,
 Generated `.rc` files can be compared byte-for-byte against Kotlin-generated reference files. The reference `.rc` files are produced by the upstream Kotlin creation library and can be placed in `demos/reference_rc/` for local comparison. When compared against the full set of 171 upstream references, 145 match exactly. The comparison accounts for name mapping (some Python demo names differ from their Kotlin reference names) and cross-name aliases.
 
 The 26 non-matching references fall into documented categories:
-- **8** require Android `Bitmap` APIs (not available in pure Python)
+- **8** use bitmaps loaded from Android app resources (image data not available as standalone files)
 - **3** require `buildPathFromText` (font rasterization)
 - **~12** lack matching upstream source code
 - **4** have explained byte-level differences (denormalized zeros, stale references)
@@ -276,8 +276,10 @@ Python-generated `.rc` files can be loaded into an Android viewer app that uses 
 
 ## Known Limitations
 
+**Bitmap support:**
+Bitmap data support is fully implemented — the wire protocol stores PNG bytes, not Android `Bitmap` objects. Use `add_bitmap_png()`, `add_bitmap_from_png()`, `add_bitmap_from_file()`, or `add_bitmap_data()` to add images. The Java convenience methods `addBitmap(Object)` / `addNamedBitmap(name, Object)` are not ported because they accept Android-specific `Bitmap` objects, but the Python equivalents accept PNG bytes directly. 8 reference demos remain unmatched because their Kotlin source loads bitmaps from Android app resources not available as standalone files.
+
 **Unported platform-specific APIs:**
-- `addNamedBitmap()` / `addBitmap(Object)` — require Android `Bitmap` (8 reference demos affected)
 - `buildPathFromText()` — requires font rasterization (3 reference demos affected)
 
 **Platform differences:**
@@ -304,7 +306,6 @@ See [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md) for the complete list
 
 ## Future Work
 
-- **Bitmap support**: Add `add_bitmap_data()` support for raw pixel data without Android `Bitmap` dependency
 - **Path from text**: Investigate FreeType or similar for `buildPathFromText()` without heavy dependencies
 - **Remaining Kotlin references**: Port individual demo scripts for the ~12 references that require matching exact Kotlin DSL calls
 - **CI integration**: Automate demo generation and reference comparison in a CI pipeline

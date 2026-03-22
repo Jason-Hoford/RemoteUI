@@ -1007,6 +1007,43 @@ class RemoteComposeWriter:
         self._buffer.store_bitmap_url(cid, url)
         return cid
 
+    def add_named_bitmap(self, name: str, width: int, height: int,
+                         png_data: bytes) -> int:
+        """Store PNG bitmap data and register it as a named variable.
+
+        Equivalent to Java's addNamedBitmap(name, Bitmap), but accepts
+        PNG bytes directly instead of an Android Bitmap object.
+        """
+        cid = self.add_bitmap_png(width, height, png_data)
+        self._buffer.set_named_variable(cid, name, 3)  # IMAGE_TYPE
+        return cid
+
+    def add_bitmap_from_png(self, png_data: bytes, name: str = None) -> int:
+        """Store a PNG image, extracting dimensions from the PNG header.
+
+        No external dependencies required — dimensions are parsed from
+        the standard PNG IHDR chunk.
+        """
+        from .platform.platform_services import _parse_png_dimensions
+        dims = _parse_png_dimensions(png_data)
+        if dims is None:
+            raise ValueError("Data is not a valid PNG (bad signature)")
+        width, height = dims
+        cid = self.add_bitmap_png(width, height, png_data)
+        if name is not None:
+            self._buffer.set_named_variable(cid, name, 3)  # IMAGE_TYPE
+        return cid
+
+    def add_bitmap_from_file(self, path: str, name: str = None) -> int:
+        """Load a PNG file from disk and store it as a bitmap.
+
+        Dimensions are extracted from the PNG header — no external
+        dependencies required.
+        """
+        with open(path, 'rb') as f:
+            png_data = f.read()
+        return self.add_bitmap_from_png(png_data, name)
+
     def draw_on_bitmap(self, bitmap_id: int, mode: int = 0, color: int = 0):
         self._buffer.draw_on_bitmap(bitmap_id, mode, color)
 

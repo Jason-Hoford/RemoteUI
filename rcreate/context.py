@@ -271,6 +271,28 @@ class RcContext:
     def add_bitmap_data(self, width: int, height: int, data: bytes) -> int:
         return self._writer.add_bitmap_data(width, height, data)
 
+    def add_bitmap_png(self, width: int, height: int, png_data: bytes) -> int:
+        return self._writer.add_bitmap_png(width, height, png_data)
+
+    def add_bitmap_a8(self, width: int, height: int, data: bytes) -> int:
+        return self._writer.add_bitmap_a8(width, height, data)
+
+    def add_bitmap_url(self, url: str) -> int:
+        return self._writer.add_bitmap_url(url)
+
+    def add_named_bitmap_url(self, name: str, url: str) -> int:
+        return self._writer.add_named_bitmap_url(name, url)
+
+    def add_named_bitmap(self, name: str, width: int, height: int,
+                         png_data: bytes) -> int:
+        return self._writer.add_named_bitmap(name, width, height, png_data)
+
+    def add_bitmap_from_png(self, png_data: bytes, name: str = None) -> int:
+        return self._writer.add_bitmap_from_png(png_data, name)
+
+    def add_bitmap_from_file(self, path: str, name: str = None) -> int:
+        return self._writer.add_bitmap_from_file(path, name)
+
     def create_bitmap(self, width: int, height: int) -> int:
         return self._writer.create_bitmap(width, height)
 

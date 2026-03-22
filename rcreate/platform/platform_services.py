@@ -13,18 +13,41 @@ class PlatformServices:
             return f.read()
 
     def get_image_dimensions(self, data: bytes) -> tuple[int, int]:
-        """Return (width, height) from image data. Requires Pillow."""
+        """Return (width, height) from image data.
+
+        Uses pure-Python PNG header parsing. Falls back to Pillow for
+        non-PNG formats.
+        """
+        dims = _parse_png_dimensions(data)
+        if dims is not None:
+            return dims
         try:
             from PIL import Image
             import io
             img = Image.open(io.BytesIO(data))
             return img.size
         except ImportError:
-            raise RuntimeError("Pillow is required for image operations: pip install Pillow")
+            raise RuntimeError(
+                "Image is not a PNG and Pillow is not installed. "
+                "Install Pillow for non-PNG formats: pip install Pillow"
+            )
 
     def encode_path(self, svg_path: str) -> list[float]:
         """Parse SVG path string into float array. Basic implementation."""
         return _parse_svg_path(svg_path)
+
+
+def _parse_png_dimensions(data: bytes):
+    """Extract (width, height) from a PNG file header. Returns None if not PNG.
+
+    PNG layout: 8-byte signature, then IHDR chunk with width at bytes 16-19
+    and height at bytes 20-23, both as 4-byte big-endian unsigned ints.
+    """
+    import struct
+    if len(data) < 24 or data[:8] != b'\x89PNG\r\n\x1a\n':
+        return None
+    width, height = struct.unpack('>II', data[16:24])
+    return (width, height)
 
 
 def _parse_svg_path(svg_path: str) -> list[float]:
