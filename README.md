@@ -1,4 +1,4 @@
-# RemoteUI
+# RemoteUI — Python Remote Compose Generator and Player
 
 **A Python generator and experimental player for RemoteCompose binary UI documents.**
 
