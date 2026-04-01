@@ -28,6 +28,20 @@ The format is based on Android's [Remote Compose](https://android.googlesource.c
 
 ---
 
+## Upstream Source & Attribution
+
+This project is a Python port of the **Java/Kotlin Remote Compose creation library** from the [AndroidX `compose/remote` tree](https://android.googlesource.com/platform/frameworks/support/+/HEAD/compose/remote/), part of the Android Open Source Project.
+
+**What was ported:** The Python `rcreate/` package reimplements the public API of the Java `remote-creation-core` module — the binary writer (`RemoteComposeWriter`), opcode serialization (`RemoteComposeBuffer`), expression system, modifier stack, paint state, path builder, and all layout/drawing operations. The Python API mirrors the Java class and method structure, with a Pythonic `RcContext` DSL layered on top.
+
+**How it was validated:** The Kotlin demo suite in the upstream repository generates `.rc` reference files. The Python generator was validated by producing the same demos and comparing output byte-for-byte against 171 Kotlin-generated reference files. 145 of 171 (85%) match exactly; the remaining differences are explained (bitmap resources, RNG-dependent demos, known float precision edge cases). See [docs/VALIDATION.md](docs/VALIDATION.md) for the full breakdown.
+
+**What was not ported:** The Java/Kotlin *player* runtime, layout engine, and Android rendering stack were not ported — those are separate upstream modules. The Python `rplayer/` is an independent implementation of a desktop renderer, not a port of the Android player.
+
+The original source is copyright The Android Open Source Project, licensed under Apache 2.0.
+
+---
+
 ## Showcase
 
 *The images below are rendered by the Python player from selected demos it handles well. The player does not yet support all features (see [Current Status](#current-status)).*
@@ -267,6 +281,21 @@ RemoteUI/
 
 ---
 
+## Companion Project: Android Viewer
+
+[RemoteComposeViewer-Android](https://github.com/Jason-Hoford/RemoteComposeViewer-Android) is a companion Android app that renders `.rc` files using the official `RemoteComposePlayer` from the upstream AndroidX library. It includes 177 built-in demos and can open custom `.rc` files from device storage.
+
+The Android viewer was used as part of end-to-end validation: Python-generated `.rc` files were loaded into the viewer to confirm they render correctly on the reference Android player. 11 demos were visually verified this way, including 6 purpose-built validation demos that exercise edge cases not covered by byte-level comparison alone.
+
+The typical workflow across both projects:
+
+1. **Generate** `.rc` files using Python (`rcreate` package)
+2. **Validate** output byte-for-byte against Kotlin reference files (`check_references.py`)
+3. **Render on Android** using the viewer app (the reference player)
+4. **Preview on desktop** with the Python player (`rplayer`) for quick iteration
+
+---
+
 ## Documentation
 
 | Document | Description |
@@ -282,3 +311,5 @@ RemoteUI/
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+The `rcreate/` generator is a port of the Java/Kotlin Remote Compose creation library from the [AndroidX `compose/remote` tree](https://android.googlesource.com/platform/frameworks/support/+/HEAD/compose/remote/), copyright The Android Open Source Project, licensed under Apache 2.0.
