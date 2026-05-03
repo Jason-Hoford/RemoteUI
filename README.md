@@ -300,6 +300,7 @@ The typical workflow across both projects:
 
 | Document | Description |
 |----------|-------------|
+| [docs/EXAMPLES.md](docs/EXAMPLES.md) | Pattern cookbook for writing `.rc` files — start here if you're writing a demo |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layer stack, binary format, key conventions |
 | [docs/VALIDATION.md](docs/VALIDATION.md) | Three-level validation workflow and results |
 | [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md) | Unported APIs, platform differences |
